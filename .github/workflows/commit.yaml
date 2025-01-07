@@ -1,0 +1,33 @@
+name: Trigger Airtable API on Commit
+
+on:
+  push:
+    branches:
+      - main # Change this to the branch you want to monitor
+
+jobs:
+  trigger-api:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Checkout the repository
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      # Step 2: Extract commit information and trigger the Airtable API
+      - name: Send Commit Info to Airtable
+        env:
+          AIRTABLE_API_URL: https://api.airtable.com/v0/appca9wvd0Q5x2Gu2/Commits
+          AIRTABLE_API_KEY: ${{ secrets.AIRTABLE_KEY }} # Set this in your repo secrets
+        run: |
+          # Get commit details
+          COMMITS=$(git log -1 --pretty=format:'{"Commit Date":"%ad","Repository URL":"${{ github.server_url }}/${{ github.repository }}","Author Email":"%ae","Repository Name":"${{ github.repository }}","Commit Message":"%s","Github Username":"${{ github.actor }}"}' --date=iso)
+
+          # Wrap commit details into the Airtable request body
+          BODY=$(jq -n --argjson commits "[{\"fields\":$COMMITS}]" '{"records":$commits}')
+
+          # Send data to Airtable
+          curl -X POST $AIRTABLE_API_URL \
+            -H "Authorization: Bearer $AIRTABLE_API_KEY" \
+            -H "Content-Type: application/json" \
+            --data "$BODY"
