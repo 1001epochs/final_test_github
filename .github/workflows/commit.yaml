@@ -34,4 +34,3 @@ jobs:
             -H "Authorization: Bearer $AIRTABLE_API_KEY" \
             -H "Content-Type: application/json" \
             --data "$BODY"
-s
