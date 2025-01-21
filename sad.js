@@ -1,40 +1,27 @@
-const https = require("https");
-const fs = require("fs");
+// Random utility function: Generate a random password
+function generateRandomPassword(length = 12) {
+  const chars =
+    "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+[]{}|;:,.<>?";
+  let password = "";
 
-// Random function to fetch JSON data from a public API
-function fetchAndSaveData(url, outputFile) {
-  https
-    .get(url, (response) => {
-      let data = "";
+  for (let i = 0; i < length; i++) {
+    const randomIndex = Math.floor(Math.random() * chars.length);
+    password += chars[randomIndex];
+  }
 
-      // Collect data chunks
-      response.on("data", (chunk) => {
-        data += chunk;
-      });
-
-      // Once all data is received
-      response.on("end", () => {
-        try {
-          const jsonData = JSON.parse(data);
-          fs.writeFile(outputFile, JSON.stringify(jsonData, null, 2), (err) => {
-            if (err) {
-              console.error("Error writing to file:", err);
-            } else {
-              console.log(`Data saved to ${outputFile}`);
-            }
-          });
-        } catch (error) {
-          console.error("Error parsing JSON:", error.message);
-        }
-      });
-    })
-    .on("error", (err) => {
-      console.error("Error fetching data:", err.message);
-    });
+  return password;
 }
 
-// Example usage
-const apiUrl = "https://jsonplaceholder.typicode.com/posts";
-const outputFile = "output.json";
+// Generate and log a random password
+const randomPassword = generateRandomPassword(16);
+console.log("Generated Password : ", randomPassword);
 
-fetchAndSaveData(apiUrl, outputFile);
+// Another example: Calculate the factorial of a random number
+function factorial(num) {
+  if (num <= 1) return 1;
+  return num * factorial(num - 1);
+}
+
+const randomNum = Math.floor(Math.random() * 10) + 1; // Random number between 1 and 10
+const result = factorial(randomNum);
+console.log(`Factorial of ${randomNum} is ${result}`);
