@@ -14,7 +14,7 @@ function generateRandomPassword(length = 12) {
 
 // Generate and log a random password
 const randomPassword = generateRandomPassword(16);
-console.log("Generated Password :", randomPassword);
+console.log("Generated Password : ", randomPassword);
 
 // Another example: Calculate the factorial of a random number
 function factorial(num) {

@@ -20,35 +20,17 @@ jobs:
           AIRTABLE_API_URL: https://api.airtable.com/v0/appca9wvd0Q5x2Gu2/Commits
           AIRTABLE_API_KEY: ${{ secrets.AIRTABLE_KEY }} # Set this in your repo secrets
         run: |
-          # Verify if the secret is accessible
-          if [ -z "$AIRTABLE_API_KEY" ]; then
-            echo "Error: AIRTABLE_API_KEY is not set. Please check your repository secrets."
-            exit 1
-          else
-            echo "AIRTABLE_API_KEY is set. Proceeding with API call."
-          fi
+          # Get commit metadata
+          METADATA=$(git log -1 --pretty=format:'{"Commit Date":"%ad","Repository URL":"${{ github.server_url }}/${{ github.repository }}","Author Email":"%ae","Repository Name":"${{ github.repository }}","Commit Message":"%s","Github Username":"${{ github.actor }}"}' --date=iso)
 
-          # Get commit details
-          COMMITS=$(git log -1 --pretty=format:'{"Commit Date":"%ad","Repository URL":"${{ github.server_url }}/${{ github.repository }}","Author Email":"%ae","Repository Name":"${{ github.repository }}","Commit Message":"%s","Github Username":"${{ github.actor }}"}' --date=iso)
+          # Get the committed code
+          COMMITTED_CODE=$(git show --pretty=format:'' --unified=0)
 
-          # Wrap commit details into the Airtable request body
-          BODY=$(jq -n --argjson commits "[{\"fields\":$COMMITS}]" '{"records":$commits}')
+          # Combine metadata and committed code
+          PAYLOAD=$(jq -n --argjson metadata "$METADATA" --arg code "$COMMITTED_CODE" '{"records":[{"fields":{"Commit Metadata":$metadata, "Code Committed":$code}}]}')
 
-          # Debug log to verify the request payload
-          echo "Generated Airtable payload: $BODY"
-
-          # Send data to Airtable and capture the HTTP response
-          RESPONSE=$(curl -s -o response.txt -w "%{http_code}" -X POST $AIRTABLE_API_URL \
+          # Send data to Airtable
+          curl -X POST $AIRTABLE_API_URL \
             -H "Authorization: Bearer $AIRTABLE_API_KEY" \
             -H "Content-Type: application/json" \
-            --data "$BODY")
-
-          # Check if the response is successful
-          if [ "$RESPONSE" -eq 200 ]; then
-            echo "Data successfully sent to Airtable."
-          else
-            echo "Failed to send data to Airtable. HTTP response code: $RESPONSE"
-            echo "Response body:"
-            cat response.txt
-            exit 1
-          fi
+            --data "$PAYLOAD"
