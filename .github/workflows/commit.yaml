@@ -22,8 +22,8 @@ jobs:
           AIRTABLE_API_URL: https://api.airtable.com/v0/appca9wvd0Q5x2Gu2/Commits
           AIRTABLE_API_KEY: ${{ secrets.AIRTABLE_SECRET }} # Set this in your repo secrets
         run: |
-          # Get code changes
-          CODE_CHANGES=$(git diff HEAD^ HEAD | base64 -w 0)
+          # Get code changes and escape special characters for JSON
+          CODE_CHANGES=$(git diff HEAD^ HEAD | jq -R -s '.')
 
           # Get commit details with added code changes
           COMMITS=$(git log -1 --pretty=format:'{
@@ -33,7 +33,7 @@ jobs:
             "Repository Name":"${{ github.repository }}",
             "Commit Message":"%s",
             "Github Username":"${{ github.actor }}",
-            "Code Committed":"%s'"$CODE_CHANGES"'"
+            "Code Committed":%s'"$CODE_CHANGES"'
           }' --date=iso)
 
           # Wrap commit details into the Airtable request body
