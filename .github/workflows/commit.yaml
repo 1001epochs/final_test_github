@@ -49,7 +49,7 @@ jobs:
               "records": [
                 {
                   "fields": {
-                    "Code Committed": $code
+                    "Code Committed": CODE_COMMITTED
                   }
                 }
               ]
