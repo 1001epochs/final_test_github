@@ -33,6 +33,8 @@ function fetchAndSaveData(url, outputFile) {
     });
 }
 
+console.error("testing");
+
 // Example usage
 const apiUrl = "https://jsonplaceholder.typicode.com/posts";
 const outputFile = "output.json";
