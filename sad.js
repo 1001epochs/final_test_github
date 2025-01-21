@@ -34,9 +34,6 @@ function fetchAndSaveData(url, outputFile) {
 }
 
 console.error("testing");
-console.error("testing");
-console.error("testing");
-console.error("testing2");
 console.error("testing2");
 console.error("testing2");
 console.error("testing");
