@@ -35,9 +35,7 @@ function fetchAndSaveData(url, outputFile) {
 
 console.error("testing");
 console.error("testing2");
-console.error("testing2");
-console.error("testing");
-console.error("testing2");
+console.log("Hello");
 
 // Example usage
 const apiUrl = "https://jsonplaceholder.typicode.com/posts";
