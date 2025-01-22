@@ -46,6 +46,9 @@ console.log("Hello");
 console.log("Hello");
 console.log("Hello");
 console.log("Hello");
+console.log("Hello");
+console.log("Hello");
+console.log("Hello");
 
 // Example usage
 const apiUrl = "https://jsonplaceholder.typicode.com/posts";
