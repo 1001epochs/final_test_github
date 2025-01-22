@@ -32,26 +32,4 @@ function fetchAndSaveData(url, outputFile) {
       console.error("Error fetching data:", err.message);
     });
 }
-
-console.error("testing");
-
-console.log("Hello");
-console.log("Hello");
-console.log("Hello");
-console.log("Hello");
-console.log("Hello");
-console.log("Hello");
-console.log("Hello");
-console.log("Hello");
-console.log("Hello");
-console.log("Hello");
-console.log("Hello");
-console.log("Hello");
-console.log("Hello");
-console.log("Hello");
-
-// Example usage
-const apiUrl = "https://jsonplaceholder.typicode.com/posts";
-const outputFile = "output.json";
-
-fetchAndSaveData(apiUrl, outputFile);
+console.log("its working I think");
