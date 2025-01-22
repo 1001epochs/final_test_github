@@ -13,31 +13,57 @@ jobs:
         with:
           fetch-depth: 2
 
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.x"
+
       - name: Send Commit Info to Airtable
         env:
           AIRTABLE_API_URL: https://api.airtable.com/v0/appca9wvd0Q5x2Gu2/Commits
           AIRTABLE_API_KEY: ${{ secrets.AIRTABLE_SECRET }}
         run: |
-          # Get code changes and properly escape them
-          CODE_CHANGES=$(git diff HEAD^ HEAD | python3 -c '
-          import sys, json
-          print(json.dumps(sys.stdin.read()))
-          ')[1:-1]  # Remove surrounding quotes
+          # Create a Python script to handle the data processing
+          cat << 'EOF' > process_commit.py
+          import json
+          import subprocess
+          import os
 
-          # Create a temporary JSON file for the commit data
-          echo '{
-            "records": [{
-              "fields": {
-                "Commit Date": "'$(git log -1 --pretty=format:"%ad" --date=iso)'",
-                "Repository URL": "${{ github.server_url }}/${{ github.repository }}",
-                "Author Email": "'$(git log -1 --pretty=format:"%ae")'",
-                "Repository Name": "${{ github.repository }}",
-                "Commit Message": "'$(git log -1 --pretty=format:"%s" | sed 's/"/\\"/g')'",
-                "Github Username": "${{ github.actor }}",
-                "Code Committed": "'"$CODE_CHANGES"'"
-              }
-            }]
-          }' > commit_data.json
+          # Get git diff
+          diff_process = subprocess.run(['git', 'diff', 'HEAD^', 'HEAD'], 
+                                     capture_output=True, text=True)
+          code_changes = diff_process.stdout
+
+          # Get commit details
+          commit_date = subprocess.run(['git', 'log', '-1', '--pretty=format:%ad', '--date=iso'], 
+                                    capture_output=True, text=True).stdout
+          author_email = subprocess.run(['git', 'log', '-1', '--pretty=format:%ae'], 
+                                     capture_output=True, text=True).stdout
+          commit_message = subprocess.run(['git', 'log', '-1', '--pretty=format:%s'], 
+                                       capture_output=True, text=True).stdout
+
+          # Create the data structure
+          data = {
+              "records": [{
+                  "fields": {
+                      "Commit Date": commit_date,
+                      "Repository URL": os.environ['GITHUB_SERVER_URL'] + '/' + os.environ['GITHUB_REPOSITORY'],
+                      "Author Email": author_email,
+                      "Repository Name": os.environ['GITHUB_REPOSITORY'],
+                      "Commit Message": commit_message,
+                      "Github Username": os.environ['GITHUB_ACTOR'],
+                      "Code Committed": code_changes
+                  }
+              }]
+          }
+
+          # Write to file
+          with open('commit_data.json', 'w') as f:
+              json.dump(data, f)
+          EOF
+
+          # Run the Python script
+          python process_commit.py
 
           # Send data to Airtable
           curl -X POST "$AIRTABLE_API_URL" \
