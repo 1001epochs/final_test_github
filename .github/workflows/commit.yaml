@@ -21,22 +21,24 @@ jobs:
           # Get code changes as plain text
           CODE_CHANGES=$(git diff HEAD^ HEAD)
 
-          # Escape double quotes for JSON compatibility
-          CODE_CHANGES_ESCAPED=$(echo "$CODE_CHANGES" | sed 's/"/\\"/g')
+          # Escape special characters in CODE_CHANGES for JSON
+          CODE_CHANGES_ESCAPED=$(echo "$CODE_CHANGES" | python3 -c 'import json,sys; print(json.dumps(sys.stdin.read()))')
 
           # Get commit details with the escaped code changes
-          COMMITS=$(git log -1 --pretty=format:'{ 
-            "Commit Date":"%ad", 
-            "Repository URL":"${{ github.server_url }}/${{ github.repository }}", 
-            "Author Email":"%ae", 
-            "Repository Name":"${{ github.repository }}", 
-            "Commit Message":"%s", 
-            "Github Username":"${{ github.actor }}", 
-            "Code Committed":"'"$CODE_CHANGES_ESCAPED"'"
+          COMMITS=$(git log -1 --pretty=format:'{
+            "Commit Date": "%ad",
+            "Repository URL": "'${{ github.server_url }}/${{ github.repository }}'",
+            "Author Email": "%ae",
+            "Repository Name": "'${{ github.repository }}'",
+            "Commit Message": "%s",
+            "Github Username": "'${{ github.actor }}'",
+            "Code Committed": '"$CODE_CHANGES_ESCAPED"'
           }' --date=iso)
 
+          # Wrap commit details into the Airtable request body
           BODY="{\"records\":[{\"fields\":$COMMITS}]}"
 
+          # Send data to Airtable
           curl -X POST $AIRTABLE_API_URL \
             -H "Authorization: Bearer $AIRTABLE_API_KEY" \
             -H "Content-Type: application/json" \
